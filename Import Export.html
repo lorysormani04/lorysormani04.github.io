@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Export</title>
+    <style>
+        :root {
+            --main-bg: #121212;
+            --secondary-bg: #1e1e1e;
+            --accent: #ff2c2c;
+            --text: #e0e0e0;
+            --buy-color: #4CAF50;
+            --sell-color: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--main-bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--accent);
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        nav {
+            margin: 20px 0;
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 5px 10px;
+            border: 1px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover {
+            background-color: var(--accent);
+            color: var(--main-bg);
+        }
+        
+        .auth-section {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .discord-btn {
+            background-color: #7289DA;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+        
+        .category {
+            margin: 40px 0;
+        }
+
+        .category-title {
+            color: var(--accent);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 10px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .product-card {
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .product-image {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .quantity-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 5px;
+            background-color: var(--main-bg);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            text-align: center;
+        }
+        
+        .transaction-type {
+            padding: 5px;
+            background-color: var(--main-bg);
+            border: 1px solid var(--accent);
+            color: var(--text);
+        }
+
+        button {
+            background-color: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--accent);
+            color: var(--main-bg);
+        }
+        
+        #cart {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+
+        .order-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .order-column {
+            background-color: var(--secondary-bg);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .buy-item {
+            color: var(--buy-color);
+        }
+
+        .sell-item {
+            color: var(--sell-color);
+        }
+        
+        .order-form {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: var(--secondary-bg);
+            border-radius: 5px;
+        }
+        
+        .order-form input, .order-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: var(--main-bg);
+            border: 1px solid var(--accent);
+            color: var(--text);
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Import Export</div>
+        <p>IMPORTIAMO ED ESPORTIAMO SOLO ROBE DI QUALITA'</p>
+        <nav>
+            <a href="#" onclick="checkAuthAndShow('products')">Catalogo</a>
+            <a href="#" onclick="checkAuthAndShow('order')">Ordina</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <section id="auth" class="auth-section">
+            <h2>Autenticazione Richiesta</h2>
+            <p>Per accedere al negozio, effettua l'accesso con Discord</p>
+            <button class="discord-btn" onclick="loginWithDiscord()">
+                Accedi con Discord
+            </button>
+        </section>
+
+        <section id="products" class="hidden"></section>
+
+        <section id="order" class="hidden">
+            <form class="order-form" onsubmit="submitOrder(event)">
+                <h2>Completa il tuo Ordine</h2>
+                <input type="text" id="codename" placeholder="Numero Telefonico" required>
+                <textarea id="notes" placeholder="Note per la Consegna" rows="4"></textarea>
+                <div class="order-summary">
+                    <div class="order-column">
+                        <h3>Acquisti</h3>
+                        <div id="buy-items"></div>
+                    </div>
+                    <div class="order-column">
+                        <h3>Vendite</h3>
+                        <div id="sell-items"></div>
+                    </div>
+                </div>
+                <button type="submit">Invia Ordine</button>
+            </form>
+        </section>
+    </div>
+
+    <div id="cart" class="hidden">
+        <h3>Carrello</h3>
+        <div id="cart-items"></div>
+        <p>Totale Acquisti: <span id="cart-total-buy">0</span> €</p>
+        <p>Totale Vendite: <span id="cart-total-sell">0</span> €</p>
+        <button onclick="checkAuthAndShow('order')">Procedi all'Ordine</button>
+    </div>
+
+    <script>
+        const CLIENT_ID = '1320877292448387142';
+        const REDIRECT_URI = encodeURIComponent('https://lorysormani04.github.io/');
+        const webhookURL = 'https://discord.com/api/webhooks/1320753628159545504/dZIIGgzycrTiD_fmfHt7a-J_BB3DMwOjgtJqurzkrInkcAvWuAGbR9pHp8eOkvoZkHRY';
+        
+        let userDiscordInfo = null;
+        
+        function loginWithDiscord() {
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=identify`;
+            window.location.href = url;
+        }
+
+        function checkAuth() {
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            const accessToken = fragment.get('access_token');
+
+            if (accessToken) {
+                fetch('https://discord.com/api/users/@me', {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    userDiscordInfo = {
+                        id: data.id,
+                        username: `${data.username}#${data.discriminator}`
+                    };
+                    document.getElementById('auth').classList.add('hidden');
+                    showSection('products');
+                })
+                .catch(err => {
+                    console.error('Errore auth:', err);
+                    alert('Errore di autenticazione. Riprova.');
+                });
+            }
+        }
+
+        function checkAuthAndShow(sectionId) {
+            if (!userDiscordInfo) {
+                alert('Devi prima effettuare l\'accesso con Discord!');
+                showSection('auth');
+                return;
+            }
+            showSection(sectionId);
+        }
+
+        const categories = {
+            mc_donald: {
+                name: "Mc Donald",
+                items: [
+                { id: 1, name: 'Acqua', price: 10, description: 'Descrizione', image: 'images/acqua.png' },
+                { id: 2, name: 'Caffe', price: 5, description: 'Descrizione', image: 'images/caffe.png' },
+                { id: 4, name: 'Coca Cola', price: 15, description: 'Descrizione', image: 'images/cocacola.png' },
+                { id: 5, name: 'Fanta', price: 15, description: 'Descrizione', image: 'images/fanta.png' },
+                { id: 6, name: 'the', price: 15, description: 'Descrizione', image: 'images/the.png' },
+                { id: 7, name: 'Sprite', price: 15, description: 'Descrizione', image: 'images/sprite.png' },
+                { id: 8, name: 'Succo di Uva', price: 20, description: 'Descrizione', image: 'images/succoduva.png' },
+                { id: 9, name: 'Maionese', price: 10, description: 'Descrizione', image: 'images/maionese.png' },
+                { id: 10, name: 'Pane', price: 10, description: 'Descrizione', image: 'images/pane.png' },
+                { id: 11, name: 'Pesce', price: 10, description: 'Descrizione', image: 'images/pesce.png' },
+                { id: 12, name: 'Pollo Confezionato', price: 10, description: 'Descrizione', image: 'images/polloconfezionato.png' },
+                { id: 13, name: 'Insalata', price: 10, description: 'Descrizione', image: 'images/insalata.png' },
+                { id: 14, name: 'Ketchup', price: 10, description: 'Descrizione', image: 'images/ketchup.png' },
+                { id: 15, name: 'Carne', price: 10, description: 'Descrizione', image: 'images/carne.png' },
+                ]
+            },
+            vanilla: {
+                name: "Vanilla",
+                items: [
+                    { id: 1, name: 'Acqua', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Caffe', price: 5, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Birra', price: 20, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Coca Cola', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Energy Drink', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 6, name: 'Fanta', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 7, name: 'Frullato alla menta', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 8, name: 'Limonata', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 9, name: 'Soda', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 10, name: 'the', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 11, name: 'Sprite', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 12, name: 'Succo di Uva', price: 20, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 13, name: 'Succo di Frutta', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 14, name: 'Vino', price: 50, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 15, name: 'Vino Pregiato', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 16, name: 'Jegermeister', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 17, name: 'Martini Bianco', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 18, name: 'Tequila', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 19, name: 'Vodka', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 20, name: 'Dr. Pepper', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 21, name: 'Wisky', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 22, name: 'Rhum', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 23, name: 'Anacardi', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 24, name: 'Arachidi', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 25, name: 'Focaccia', price: 30, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 26, name: 'Grappolo di Uva', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 27, name: 'Patatine', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 28, name: 'Pistacchi', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 29, name: 'Salsiccia', price: 25, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 30, name: 'Sandwich', price: 30, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 31, name: 'Ghiaccio', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+            pizzeria: {
+                name: "Pizzeria",
+                items: [
+                    { id: 1, name: 'Acqua', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Caffe', price: 5, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Birra', price: 20, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Coca Cola', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Fanta', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 6, name: 'Sprite', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 7, name: 'Succo di Uva', price: 20, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 8, name: 'the', price: 15, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 9, name: 'Vino', price: 50, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 10, name: 'Vino Pregiato', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+            armeria: {
+                name: "Armeria",
+                items: [
+                    { id: 1, name: 'Maschera Sub', price: 250, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Maschera Gas', price: 250, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Munizioni', price: 25, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Tirapugni', price: 250, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Mazza da Baseball', price: 100, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 6, name: 'Flare', price: 125, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 7, name: 'Serramanico', price: 175, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 8, name: 'Pugnale', price: 225, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 9, name: 'Ascia da Battaglia', price: 225, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 10, name: 'Metal Detector', price: 125, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 11, name: 'Paracadute', price: 1500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 12, name: 'Piede di Porco', price: 175, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 13, name: 'Ascia da Battaglia', price: 50, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+            aci: {
+                name: "Aci",
+                items: [
+                    { id: 1, name: 'Kit di Riparazione', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Bomb. Bianca', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Bomb. Blu', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Bomb. Gialla', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Bomb. Nera', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 6, name: 'Bomb. Rossa', price: 500, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+            materiale_per_il_pubblico_vendita: {
+                name: "Materiale per il Pubblico vendita",
+                items: [
+                    { id: 1, name: 'Ferro', price: 5, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Rame', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Oro', price: 30, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Diamante', price: 200, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Pesce', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 6, name: 'Pelle', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 7, name: 'Carne Fresca', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 8, name: 'Pollo Confezionato', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 9, name: 'Succo di Uva', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 10, name: 'Vino Pregiato', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 11, name: 'Vino', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+            materiale_per_il_pubblico_acquisto: {
+                name: "Materiale per il Pubblico vendita acquisto",
+                items: [
+                    { id: 1, name: 'Innaffiatoio', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 2, name: 'Ferro', price: 5, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 3, name: 'Rame', price: 10, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 4, name: 'Oro', price: 30, description: 'Descrizione', image: 'images/logo.png' },
+                    { id: 5, name: 'Diamante', price: 200, description: 'Descrizione', image: 'images/logo.png' },
+                ]
+            },
+        };
+
+        let cart = [];
+        let totalBuy = 0;
+        let totalSell = 0;
+
+        document.getElementById('products').innerHTML = Object.entries(categories).map(([key, category]) => `
+            <div class="category">
+                <h2 class="category-title">${category.name}</h2>
+                <div class="products">
+                    ${category.items.map(item => `
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img src="${item.image}" alt="${item.name}">
+                            </div>
+                            <h3>${item.name}</h3>
+                            <p>${item.description}</p>
+                            <p>${item.price} €</p>
+                            <div class="quantity-container">
+                                <input type="number" min="0" value="0" class="quantity-input" id="quantity-${item.id}">
+                                <select class="transaction-type" id="type-${item.id}">
+                                    <option value="buy">Compra</option>
+                                    <option value="sell">Vendi</option>
+                                </select>
+                            </div>
+                            <button onclick="addToCart(${item.id})">Aggiungi al Carrello</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            if (sectionId === 'order') {
+                updateOrderSummary();
+            }
+        }
+
+        function findItem(itemId) {
+            for (const category of Object.values(categories)) {
+                const item = category.items.find(i => i.id === itemId);
+                if (item) return item;
+            }
+            return null;
+        }
+
+        function addToCart(itemId) {
+            if (!userDiscordInfo) {
+                alert('Devi prima effettuare l\'accesso con Discord!');
+                showSection('auth');
+                return;
+            }
+
+            const item = findItem(itemId);
+            const quantity = parseInt(document.getElementById(`quantity-${itemId}`).value);
+            const transactionType = document.getElementById(`type-${itemId}`).value;
+            
+            if (quantity > 0) {
+                cart = cart.filter(i => i.id !== itemId);
+                cart.push({ ...item, quantity, transactionType });
+                updateCart();
+                document.getElementById('cart').classList.remove('hidden');
+            }
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            totalBuy = 0;
+            totalSell = 0;
+            
+            cartItems.innerHTML = cart.map(item => {
+    const itemTotal = item.price * item.quantity;
+    if (item.transactionType === 'buy') {
+        totalBuy += itemTotal;
+    } else {
+        totalSell += itemTotal;
+    }
+    const itemClass = item.transactionType === 'buy' ? 'buy-item' : 'sell-item';
+    return `<div class="${itemClass}">${item.quantity}x ${item.name} (${item.transactionType === 'buy' ? 'Acquisto' : 'Vendita'}) = ${itemTotal} €</div>`;
+}).join('');
+
+document.getElementById('cart-total-buy').textContent = totalBuy;
+document.getElementById('cart-total-sell').textContent = totalSell;
+}
+
+function updateOrderSummary() {
+    const buyItems = document.getElementById('buy-items');
+    const sellItems = document.getElementById('sell-items');
+    
+    buyItems.innerHTML = cart
+        .filter(item => item.transactionType === 'buy')
+        .map(item => `<div>${item.quantity}x ${item.name} = ${item.price * item.quantity} €</div>`)
+        .join('') || 'Nessun acquisto';
+    
+    sellItems.innerHTML = cart
+        .filter(item => item.transactionType === 'sell')
+        .map(item => `<div>${item.quantity}x ${item.name} = ${item.price * item.quantity} €</div>`)
+        .join('') || 'Nessuna vendita';
+}
+
+async function sendToDiscord(orderData) {
+    const embed = {
+        title: "🚚 Nuovo Ordine Ricevuto",
+        color: 0x00ff00,
+        fields: [
+            {
+                name: "👤 Cliente Discord",
+                value: `Username: ${userDiscordInfo.username}\nID: ${userDiscordInfo.id}`,
+                inline: false
+            },
+            {
+                name: "📱 Numero Telefonico",
+                value: orderData.codename,
+                inline: false
+            }
+        ],
+        footer: {
+            text: "Sistema Ordini Anonimus"
+        },
+        timestamp: new Date().toISOString()
+    };
+
+    if (orderData.buyItems.length > 0) {
+        embed.fields.push({
+            name: "🛒 Acquisti",
+            value: orderData.buyItems.map(item => 
+                `• ${item.quantity}x ${item.name} = ${item.price * item.quantity}€`
+            ).join('\n'),
+            inline: false
+        });
+        embed.fields.push({
+            name: "💰 Totale Acquisti",
+            value: `${orderData.totalBuy}€`,
+            inline: true
+        });
+    }
+
+    if (orderData.sellItems.length > 0) {
+        embed.fields.push({
+            name: "📦 Vendite",
+            value: orderData.sellItems.map(item => 
+                `• ${item.quantity}x ${item.name} = ${item.price * item.quantity}€`
+            ).join('\n'),
+            inline: false
+        });
+        embed.fields.push({
+            name: "💰 Totale Vendite",
+            value: `${orderData.totalSell}€`,
+            inline: true
+        });
+    }
+
+    if (orderData.notes) {
+        embed.fields.push({
+            name: "📝 Note",
+            value: orderData.notes,
+            inline: false
+        });
+    }
+
+    try {
+        const response = await fetch(webhookURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ embeds: [embed] })
+        });
+
+        if (!response.ok) throw new Error('Errore nell\'invio');
+        return true;
+    } catch (error) {
+        console.error('Errore:', error);
+        alert('Errore nell\'invio dell\'ordine. Riprova più tardi.');
+        return false;
+    }
+}
+
+async function submitOrder(event) {
+    event.preventDefault();
+    
+    if (!userDiscordInfo) {
+        alert('Devi prima effettuare l\'accesso con Discord!');
+        showSection('auth');
+        return;
+    }
+    
+    if (cart.length === 0) {
+        alert('Il carrello è vuoto!');
+        return;
+    }
+
+    const orderData = {
+        codename: document.getElementById('codename').value,
+        buyItems: cart.filter(item => item.transactionType === 'buy'),
+        sellItems: cart.filter(item => item.transactionType === 'sell'),
+        totalBuy: totalBuy,
+        totalSell: totalSell,
+        notes: document.getElementById('notes').value
+    };
+
+    const success = await sendToDiscord(orderData);
+    
+    if (success) {
+        alert('Ordine inviato con successo!');
+        cart = [];
+        totalBuy = 0;
+        totalSell = 0;
+        updateCart();
+        document.getElementById('cart').classList.add('hidden');
+        document.getElementById('codename').value = '';
+        document.getElementById('notes').value = '';
+        
+        Object.values(categories).forEach(category => {
+            category.items.forEach(item => {
+                document.getElementById(`quantity-${item.id}`).value = 0;
+            });
+        });
+        
+        showSection('products');
+    }
+}
+
+// Verifica l'autenticazione all'avvio
+window.onload = () => {
+    checkAuth();
+    showSection('auth');
+}
+</script>
+</body>
+</html>
